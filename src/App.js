@@ -7,18 +7,7 @@ import whiteKeyPressed from "./whiteKeyPressed.svg";
 import whiteKeyLeftPressed from "./whiteKeyLeftPressed.svg";
 import whiteKeyRightPressed from "./whiteKeyRightPressed.svg";
 import blackKeyPressed from "./blackKeyPressed.svg";
-import cAudio from "./Sounds/key08.mp3";
-import csAudio from "./Sounds/key09.mp3";
-import dAudio from "./Sounds/key10.mp3";
-import dsAudio from "./Sounds/key11.mp3";
-import eAudio from "./Sounds/key12.mp3";
-import fAudio from "./Sounds/key13.mp3";
-import fsAudio from "./Sounds/key14.mp3";
-import gAudio from "./Sounds/key15.mp3";
-import gsAudio from "./Sounds/key16.mp3";
-import aAudio from "./Sounds/key17.mp3";
-import asAudio from "./Sounds/key18.mp3";
-import bAudio from "./Sounds/key19.mp3";
+import { pianoSounds } from "./pianoSounds";
 import "./App.css";
 import Key from "./Key";
 import { useEffect, useState } from "react";
@@ -27,80 +16,236 @@ import { Howl, Howler } from "howler";
 function App() {
     const [playingKeys, setPlayingKeys] = useState([]);
     const [notes, setNotes] = useState([]);
+    const [keyCodesOrdered, setKeyCodesOrdered] = useState([
+        "ShiftLeft",
+        "CapsLock",
+        "IntlBackslash",
+        "KeyA",
+        "KeyZ",
+        "KeyX",
+        "KeyD",
+        "KeyC",
+        "KeyF",
+        "KeyV",
+        "KeyG",
+        "KeyB",
+        "KeyH",
+        "KeyU",
+        "KeyJ",
+        "KeyI",
+        "KeyK",
+        "KeyL",
+        "KeyP",
+        "Semicolon",
+        "BracketLeft",
+        "Quote",
+        "BracketRight",
+        "Backslash",
+        "Backquote",
+        "Digit1",
+        "KeyQ",
+        "Digit2",
+        "KeyW",
+        "KeyE",
+        "Digit4",
+        "KeyR",
+        "Digit5",
+        "KeyT",
+        "Digit6",
+        "KeyY",
+    ]);
+    const [lastPlayed, setLastPlayed] = useState([
+        Array(pianoSounds.length).fill(null),
+    ]);
+    const [playing, setPlaying] = useState(
+        Array(pianoSounds.length * 3).fill(null)
+    );
 
     useEffect(() => {
-        const c = new Howl({
-            src: [cAudio],
-            sprite: {
-                id1: [0, 4000],
-                id2: [0, 4000],
-                id3: [0, 4000],
-            },
-        });
-        const cs = new Howl({ src: [csAudio] });
-        const d = new Howl({ src: [dAudio] });
-        const ds = new Howl({ src: [dsAudio] });
-        const e = new Howl({ src: [eAudio] });
-        const f = new Howl({ src: [fAudio] });
-        const fs = new Howl({ src: [fsAudio] });
-        const g = new Howl({ src: [gAudio] });
-        const gs = new Howl({ src: [gsAudio] });
-        const a = new Howl({ src: [aAudio] });
-        const as = new Howl({ src: [asAudio] });
-        const b = new Howl({ src: [bAudio] });
+        let notesArray = Array(pianoSounds.length * 3);
+        for (let i = 0; i < pianoSounds.length * 3; i += 3) {
+            notesArray[i] = new Howl({ src: [pianoSounds[i / 3]] });
+            notesArray[i + 1] = new Howl({ src: [pianoSounds[i / 3]] });
+            notesArray[i + 2] = new Howl({ src: [pianoSounds[i / 3]] });
+        }
 
-        setNotes([c, cs, d, ds, e, f, fs, g, gs, a, as, b]);
+        setNotes(notesArray);
     }, []);
+
+    function playNote(indexDiv3) {
+        const index = indexDiv3 * 3;
+        if (!notes[index].playing()) {
+            notes[index].seek(0);
+            notes[index].volume(1);
+            notes[index].play();
+            let playingCopy = playing.slice(0);
+            playingCopy[index] = notes[index];
+            setPlaying(playingCopy);
+            let lastPlayedCopy = lastPlayed.slice(0);
+            lastPlayedCopy[indexDiv3] = 1;
+            setLastPlayed(lastPlayedCopy);
+        } else if (!notes[index + 1].playing()) {
+            notes[index + 1].seek(0);
+            notes[index + 1].volume(1);
+            notes[index + 1].play();
+            let playingCopy = playing.slice(0);
+            playingCopy[index + 1] = notes[index + 1];
+            setPlaying(playingCopy);
+            let lastPlayedCopy = lastPlayed.slice(0);
+            lastPlayedCopy[indexDiv3] = 2;
+            setLastPlayed(lastPlayedCopy);
+        } else if (!notes[index + 2].playing()) {
+            notes[index + 2].seek(0);
+            notes[index + 2].volume(1);
+            notes[index + 2].play();
+            let playingCopy = playing.slice(0);
+            playingCopy[index + 2] = notes[index + 2];
+            setPlaying(playingCopy);
+            let lastPlayedCopy = lastPlayed.slice(0);
+            lastPlayedCopy[indexDiv3] = 3;
+            setLastPlayed(lastPlayedCopy);
+        }
+    }
 
     function handleKeyDown(event) {
         if (!playingKeys.includes(event.code)) {
             let copy = playingKeys.slice();
             copy.push(event.code);
             setPlayingKeys(copy);
+            console.log(keyCodesOrdered[1]);
 
             switch (event.code) {
-                case "KeyA":
-                    // if (notes[0].playing()) {
-                    //     notes[0].seek(0);
-                    //     notes[0].volume(1);
-                    //     notes[0].play();
-                    // }
-                    var id1 = notes[0].play();
+                case keyCodesOrdered[0]:
+                    playNote(0);
                     break;
-                case "KeyS":
-                    notes[1].play();
+                case keyCodesOrdered[1]:
+                    playNote(1);
                     break;
-                case "KeyD":
-                    notes[2].play();
+                case keyCodesOrdered[2]:
+                    playNote(2);
                     break;
-                case "KeyF":
-                    notes[3].play();
+                case keyCodesOrdered[3]:
+                    playNote(3);
                     break;
-                case "KeyG":
-                    notes[4].play();
+                case keyCodesOrdered[4]:
+                    playNote(4);
                     break;
-                case "KeyH":
-                    notes[5].play();
+                case keyCodesOrdered[5]:
+                    playNote(5);
                     break;
-                case "KeyJ":
-                    notes[6].play();
+                case keyCodesOrdered[6]:
+                    playNote(6);
                     break;
-                case "KeyK":
-                    notes[7].play();
+                case keyCodesOrdered[7]:
+                    playNote(7);
                     break;
-                case "KeyL":
-                    notes[8].play();
+                case keyCodesOrdered[8]:
+                    playNote(8);
                     break;
-                case "Semicolon":
-                    notes[9].play();
+                case keyCodesOrdered[9]:
+                    playNote(9);
                     break;
-                case "Quote":
-                    notes[10].play();
+                case keyCodesOrdered[10]:
+                    playNote(10);
                     break;
-                case "Backslash":
-                    notes[11].play();
+                case keyCodesOrdered[11]:
+                    playNote(11);
+                    break;
+                case keyCodesOrdered[12]:
+                    playNote(12);
+                    break;
+                case keyCodesOrdered[13]:
+                    playNote(13);
+                    break;
+                case keyCodesOrdered[14]:
+                    playNote(14);
+                    break;
+                case keyCodesOrdered[15]:
+                    playNote(15);
+                    break;
+                case keyCodesOrdered[16]:
+                    playNote(16);
+                    break;
+                case keyCodesOrdered[17]:
+                    playNote(17);
+                    break;
+                case keyCodesOrdered[18]:
+                    playNote(18);
+                    break;
+                case keyCodesOrdered[19]:
+                    playNote(19);
+                    break;
+                case keyCodesOrdered[20]:
+                    playNote(20);
+                    break;
+                case keyCodesOrdered[21]:
+                    playNote(21);
+                    break;
+                case keyCodesOrdered[22]:
+                    playNote(22);
+                    break;
+                case keyCodesOrdered[23]:
+                    playNote(23);
+                    break;
+                case keyCodesOrdered[24]:
+                    playNote(24);
+                    break;
+                case keyCodesOrdered[25]:
+                    playNote(25);
+                    break;
+                case keyCodesOrdered[26]:
+                    playNote(26);
+                    break;
+                case keyCodesOrdered[27]:
+                    playNote(27);
+                    break;
+                case keyCodesOrdered[28]:
+                    playNote(28);
+                    break;
+                case keyCodesOrdered[29]:
+                    playNote(29);
+                    break;
+                case keyCodesOrdered[30]:
+                    playNote(30);
+                    break;
+                case keyCodesOrdered[31]:
+                    playNote(31);
+                    break;
+                case keyCodesOrdered[32]:
+                    playNote(32);
+                    break;
+                case keyCodesOrdered[33]:
+                    playNote(33);
+                    break;
+                case keyCodesOrdered[34]:
+                    playNote(34);
+                    break;
+                case keyCodesOrdered[35]:
+                    playNote(35);
                     break;
             }
+        }
+    }
+
+    function stopNote(index) {
+        playing.slice(0);
+        playing[index].fade(1, 0, 300);
+        setTimeout(() => {
+            playing[index].stop();
+            playing[index].volume(1);
+        }, 300);
+        let playingCopy = playing.slice(0);
+        playingCopy[index] = null;
+        setPlaying(playingCopy);
+    }
+
+    function jeff(i) {
+        if (lastPlayed[i] == 1) {
+            stopNote(i * 3);
+        } else if (lastPlayed[i] == 2) {
+            stopNote(i * 3 + 1);
+        } else if (lastPlayed[i] == 3) {
+            stopNote(i * 3 + 2);
         }
     }
 
@@ -110,50 +255,113 @@ function App() {
             setPlayingKeys(removed);
 
             switch (event.code) {
-                case "KeyA":
-                    notes[0].fade(1, 0, 500, id1);
-                    setTimeout(() => {
-                        notes[0].pause(id1);
-                        notes[0].seek(0, id1);
-                        notes[0].volume(1, id1);
-                    }, 500);
-                    // notes[0].on("fade", () => {
-                    //     notes[0].stop();
-                    // });
-                    //notes[0].stop();
+                case keyCodesOrdered[0]:
+                    jeff(0);
                     break;
-                case "KeyS":
-                    notes[1].stop();
+                case keyCodesOrdered[1]:
+                    jeff(1);
                     break;
-                case "KeyD":
-                    notes[2].stop();
+                case keyCodesOrdered[2]:
+                    jeff(2);
                     break;
-                case "KeyF":
-                    notes[3].stop();
+                case keyCodesOrdered[3]:
+                    jeff(3);
                     break;
-                case "KeyG":
-                    notes[4].stop();
+                case keyCodesOrdered[4]:
+                    jeff(4);
                     break;
-                case "KeyH":
-                    notes[5].stop();
+                case keyCodesOrdered[5]:
+                    jeff(5);
                     break;
-                case "KeyJ":
-                    notes[6].stop();
+                case keyCodesOrdered[6]:
+                    jeff(6);
                     break;
-                case "KeyK":
-                    notes[7].stop();
+                case keyCodesOrdered[7]:
+                    jeff(7);
                     break;
-                case "KeyL":
-                    notes[8].stop();
+                case keyCodesOrdered[8]:
+                    jeff(8);
                     break;
-                case "Semicolon":
-                    notes[9].stop();
+                case keyCodesOrdered[9]:
+                    jeff(9);
                     break;
-                case "Quote":
-                    notes[10].stop();
+                case keyCodesOrdered[10]:
+                    jeff(10);
                     break;
-                case "Backslash":
-                    notes[11].stop();
+                case keyCodesOrdered[11]:
+                    jeff(11);
+                    break;
+                case keyCodesOrdered[12]:
+                    jeff(12);
+                    break;
+                case keyCodesOrdered[13]:
+                    jeff(13);
+                    break;
+                case keyCodesOrdered[14]:
+                    jeff(14);
+                    break;
+                case keyCodesOrdered[15]:
+                    jeff(15);
+                    break;
+                case keyCodesOrdered[16]:
+                    jeff(16);
+                    break;
+                case keyCodesOrdered[17]:
+                    jeff(17);
+                    break;
+                case keyCodesOrdered[18]:
+                    jeff(18);
+                    break;
+                case keyCodesOrdered[19]:
+                    jeff(19);
+                    break;
+                case keyCodesOrdered[20]:
+                    jeff(20);
+                    break;
+                case keyCodesOrdered[21]:
+                    jeff(21);
+                    break;
+                case keyCodesOrdered[22]:
+                    jeff(22);
+                    break;
+                case keyCodesOrdered[23]:
+                    jeff(23);
+                    break;
+                case keyCodesOrdered[24]:
+                    jeff(24);
+                    break;
+                case keyCodesOrdered[25]:
+                    jeff(25);
+                    break;
+                case keyCodesOrdered[26]:
+                    jeff(26);
+                    break;
+                case keyCodesOrdered[27]:
+                    jeff(27);
+                    break;
+                case keyCodesOrdered[28]:
+                    jeff(28);
+                    break;
+                case keyCodesOrdered[29]:
+                    jeff(29);
+                    break;
+                case keyCodesOrdered[30]:
+                    jeff(30);
+                    break;
+                case keyCodesOrdered[31]:
+                    jeff(31);
+                    break;
+                case keyCodesOrdered[32]:
+                    jeff(32);
+                    break;
+                case keyCodesOrdered[33]:
+                    jeff(33);
+                    break;
+                case keyCodesOrdered[34]:
+                    jeff(34);
+                    break;
+                case keyCodesOrdered[35]:
+                    jeff(35);
                     break;
             }
         }
@@ -172,84 +380,252 @@ function App() {
                         keySVG={whiteKeyLeft}
                         keyPressedSVG={whiteKeyLeftPressed}
                         className="white-key-left"
-                        keyCode="KeyA"
+                        keyCode={keyCodesOrdered[0]}
                         playingKeys={playingKeys}
                     />
                     <Key
                         keySVG={blackKey}
                         keyPressedSVG={blackKeyPressed}
                         className="black-key"
-                        keyCode="KeyS"
+                        keyCode={keyCodesOrdered[1]}
                         playingKeys={playingKeys}
                     />
                     <Key
                         keySVG={whiteKey}
                         keyPressedSVG={whiteKeyPressed}
                         className="white-key"
-                        keyCode="KeyD"
+                        keyCode={keyCodesOrdered[2]}
                         playingKeys={playingKeys}
                     />
                     <Key
                         keySVG={blackKey}
                         keyPressedSVG={blackKeyPressed}
                         className="black-key"
-                        keyCode="KeyF"
+                        keyCode={keyCodesOrdered[3]}
                         playingKeys={playingKeys}
                     />
                     <Key
                         keySVG={whiteKey}
                         keyPressedSVG={whiteKeyPressed}
                         className="white-key"
-                        keyCode="KeyG"
+                        keyCode={keyCodesOrdered[4]}
                         playingKeys={playingKeys}
                     />
                     <Key
                         keySVG={whiteKey}
                         keyPressedSVG={whiteKeyPressed}
                         className="white-key"
-                        keyCode="KeyH"
+                        keyCode={keyCodesOrdered[5]}
                         playingKeys={playingKeys}
                     />
                     <Key
                         keySVG={blackKey}
                         keyPressedSVG={blackKeyPressed}
                         className="black-key"
-                        keyCode="KeyJ"
+                        keyCode={keyCodesOrdered[6]}
                         playingKeys={playingKeys}
                     />
                     <Key
                         keySVG={whiteKey}
                         keyPressedSVG={whiteKeyPressed}
                         className="white-key"
-                        keyCode="KeyK"
+                        keyCode={keyCodesOrdered[7]}
                         playingKeys={playingKeys}
                     />
                     <Key
                         keySVG={blackKey}
                         keyPressedSVG={blackKeyPressed}
                         className="black-key"
-                        keyCode="KeyL"
+                        keyCode={keyCodesOrdered[8]}
                         playingKeys={playingKeys}
                     />
                     <Key
                         keySVG={whiteKey}
                         keyPressedSVG={whiteKeyPressed}
                         className="white-key"
-                        keyCode="Semicolon"
+                        keyCode={keyCodesOrdered[9]}
                         playingKeys={playingKeys}
                     />
                     <Key
                         keySVG={blackKey}
                         keyPressedSVG={blackKeyPressed}
                         className="black-key"
-                        keyCode="Quote"
+                        keyCode={keyCodesOrdered[10]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={whiteKey}
+                        keyPressedSVG={whiteKeyPressed}
+                        className="white-key"
+                        keyCode={keyCodesOrdered[11]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={whiteKey}
+                        keyPressedSVG={whiteKeyPressed}
+                        className="white-key"
+                        keyCode={keyCodesOrdered[12]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={blackKey}
+                        keyPressedSVG={blackKeyPressed}
+                        className="black-key"
+                        keyCode={keyCodesOrdered[13]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={whiteKey}
+                        keyPressedSVG={whiteKeyPressed}
+                        className="white-key"
+                        keyCode={keyCodesOrdered[14]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={blackKey}
+                        keyPressedSVG={blackKeyPressed}
+                        className="black-key"
+                        keyCode={keyCodesOrdered[15]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={whiteKey}
+                        keyPressedSVG={whiteKeyPressed}
+                        className="white-key"
+                        keyCode={keyCodesOrdered[16]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={whiteKey}
+                        keyPressedSVG={whiteKeyPressed}
+                        className="white-key"
+                        keyCode={keyCodesOrdered[17]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={blackKey}
+                        keyPressedSVG={blackKeyPressed}
+                        className="black-key"
+                        keyCode={keyCodesOrdered[18]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={whiteKey}
+                        keyPressedSVG={whiteKeyPressed}
+                        className="white-key"
+                        keyCode={keyCodesOrdered[19]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={blackKey}
+                        keyPressedSVG={blackKeyPressed}
+                        className="black-key"
+                        keyCode={keyCodesOrdered[20]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={whiteKey}
+                        keyPressedSVG={whiteKeyPressed}
+                        className="white-key"
+                        keyCode={keyCodesOrdered[21]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={blackKey}
+                        keyPressedSVG={blackKeyPressed}
+                        className="black-key"
+                        keyCode={keyCodesOrdered[22]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={whiteKey}
+                        keyPressedSVG={whiteKeyPressed}
+                        className="white-key"
+                        keyCode={keyCodesOrdered[23]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={whiteKey}
+                        keyPressedSVG={whiteKeyPressed}
+                        className="white-key"
+                        keyCode={keyCodesOrdered[24]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={blackKey}
+                        keyPressedSVG={blackKeyPressed}
+                        className="black-key"
+                        keyCode={keyCodesOrdered[25]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={whiteKey}
+                        keyPressedSVG={whiteKeyPressed}
+                        className="white-key"
+                        keyCode={keyCodesOrdered[26]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={blackKey}
+                        keyPressedSVG={blackKeyPressed}
+                        className="black-key"
+                        keyCode={keyCodesOrdered[27]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={whiteKey}
+                        keyPressedSVG={whiteKeyPressed}
+                        className="white-key"
+                        keyCode={keyCodesOrdered[28]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={whiteKey}
+                        keyPressedSVG={whiteKeyPressed}
+                        className="white-key"
+                        keyCode={keyCodesOrdered[29]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={blackKey}
+                        keyPressedSVG={blackKeyPressed}
+                        className="black-key"
+                        keyCode={keyCodesOrdered[30]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={whiteKey}
+                        keyPressedSVG={whiteKeyPressed}
+                        className="white-key"
+                        keyCode={keyCodesOrdered[31]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={blackKey}
+                        keyPressedSVG={blackKeyPressed}
+                        className="black-key"
+                        keyCode={keyCodesOrdered[32]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={whiteKey}
+                        keyPressedSVG={whiteKeyPressed}
+                        className="white-key"
+                        keyCode={keyCodesOrdered[33]}
+                        playingKeys={playingKeys}
+                    />
+                    <Key
+                        keySVG={blackKey}
+                        keyPressedSVG={blackKeyPressed}
+                        className="black-key"
+                        keyCode={keyCodesOrdered[34]}
                         playingKeys={playingKeys}
                     />
                     <Key
                         keySVG={whiteKeyRight}
                         keyPressedSVG={whiteKeyRightPressed}
                         className="white-key-right"
-                        keyCode="Backslash"
+                        keyCode={keyCodesOrdered[35]}
                         playingKeys={playingKeys}
                     />
                 </div>
